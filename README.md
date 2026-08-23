@@ -77,12 +77,12 @@ speed, codec — as often as you like without re-analysing.
 
 ```mermaid
 flowchart LR
-    A[raw Bayer AVI] --> B[analyze]
+    A[(raw Bayer AVI)] --> B[analyze]
     B --> C[(track.json<br/>centres · radii · exposure)]
-    B -.optional.-> P[preview.mp4<br/>fit overlay]
+    B -.optional.-> P[(preview.mp4<br/>fit overlay)]
     C --> D[render]
     A --> D
-    D --> E[stabilized video]
+    D --> E[(stabilized video)]
     E --> F[verify]
     F -.->|residual motion,<br/>bad frame numbers| D
 ```
