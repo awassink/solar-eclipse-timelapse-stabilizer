@@ -1,0 +1,4 @@
+# Dependencies for eclipse_stabilize.py.
+# ffmpeg must also be on PATH - it is a system binary, not a pip package.
+numpy>=1.26.0
+opencv-python>=4.3.0.36
