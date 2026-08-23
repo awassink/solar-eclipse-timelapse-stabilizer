@@ -164,6 +164,18 @@ encodes. Cheap to re-run.
 | `--smooth` | `0` | **leave at 0.** See "Decisions" below |
 | `--bayer` | from track | override the pattern stored in `track.json` |
 
+Two things worth knowing before you use it:
+
+- **Trimming and speed are render-time only.** The track always covers the whole
+  clip, so you can re-cut to a different `--end` as often as you like without
+  re-running `analyze`. Skipped frames are stepped over with `cap.grab()`, never
+  by seeking — the track is indexed by source frame number, and one silently
+  inexact AVI seek would offset the entire thing. The despike gates still compute
+  their medians over the whole track, so the numbers stay comparable between cuts.
+- **`--normalize` needs the `exposure` record** that `analyze` writes into the
+  track file. A track written before that record existed is refused with a
+  message telling you to re-analyse.
+
 ```bash
 # straightforward: centre crop, exposure corrected
 python3 eclipse_stabilize.py render input.avi --track track.json \
@@ -236,7 +248,13 @@ How to read it:
   well as alignment**. Frames where the Sun is genuinely obscured (cloud,
   branches) will always fail. Look at them before touching any gate.
 - It reads a `--normalize`d file slightly worse than a plain one, because
-  rescaling moves its half-max contour. The warp is identical either way.
+  rescaling moves its half-max contour. The warp is identical either way — a
+  direct phase correlation between the two renders gives 0.02 px, so trust that
+  over `verify` here.
+- It measures its own radius curve before re-detecting, for the same reason
+  `analyze` does. Run this detector against a single radius and it goes bistable
+  late in the clip and reports its own flip-flopping as spikes — that was a large
+  part of the 459 spikes in the "before" column below.
 
 ---
 
@@ -430,7 +448,10 @@ far that the 800 px crop runs past the edge of the source. Three frames out of
 
 Everything still flagged is the Sun setting behind trees at the end of the clip.
 Cut to `--end 2800`, the same render measures 0.12 px median drift and 1.71 px
-maximum frame-to-frame, with no frame overridden by the despiker.
+maximum frame-to-frame, with no frame overridden by the despiker. That cut —
+`--crop 800 --end 2800 --normalize` — is the delivered version: 2800 frames,
+93.3 s, ending on a real treeline, with `--speed 2` and `--speed 4` variants at
+46.7 s and 23.3 s.
 
 With `--normalize`, photosphere luminance goes from 98–250 (2.55× spread, stdev
 51.0) to 92–117 (**1.27×, stdev 7.2**), and the hue holds: R 182–234, G 60–75,
